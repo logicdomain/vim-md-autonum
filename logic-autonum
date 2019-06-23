@@ -1,0 +1,94 @@
+#!/usr/bin/python3
+"""
+@Author: logic
+@Date: 20190623
+@Desc: Automatically adding number for markdown file.
+ - format: $cli format --input={file_path}
+ - clean: $cli clean --input={file_path}
+ - add: $cli add --input={file_path}
+"""
+
+import re
+import click
+
+HEAD_RE = re.compile('^#+')
+initial_num_level = [0, 1, 1, 1]  # 4 level: 0.1.1.1 => 5 level: 0.1.1.1.1 => ...
+
+def __reset_sub_levels(level, index):
+    level[index:] = initial_num_level[index:]
+    return level
+
+def __clean(file_path):
+    with open(file_path, 'r') as f:
+        lines = f.readlines()
+        length = len(lines)
+        for i in range(length):
+            line = lines[i]
+            if HEAD_RE.match(line):
+                lines[i] = re.sub(r'^\s*(#+)\s+(\d+\.)+\s+', r'\1 ', line, 1)
+
+    with open(file_path, 'w') as f:
+        f.writelines(lines)
+
+def __add(file_path):
+    num_level = list(initial_num_level)
+    with open(file_path, 'r') as f:
+        lines = f.readlines()
+        length = len(lines)
+
+        last_head_len = 1
+        for i in range(length):
+            line = lines[i]
+            if HEAD_RE.match(line):
+                head = re.match(r'^#+', line).group()
+                head_len = len(head)
+                if head_len <= last_head_len:
+                    num_level = __reset_sub_levels(num_level, head_len)
+                    num_level[head_len - 1] = num_level[head_len - 1] + 1
+                last_head_len = head_len
+
+                number_str = '.'.join([str(i) for i in num_level[:head_len] + ['.']])
+                number_str = re.sub(r'\.+$', '.', number_str)
+                lines[i] = re.sub(r'^(#+)\s+', r'\1 %s ' % number_str, line)
+
+    with open(file_path, 'w') as f:
+        # print(lines)
+        f.writelines(lines)
+
+@click.group()
+def cli():
+    pass
+
+@click.command()
+@click.option('--input', default='', help='file path for cleaning')
+def clean(input):
+    """
+    # clean number
+    """
+    __clean(input)
+
+@click.command()
+@click.option('--input', default='', help='file path for adding')
+def add(input):
+    """
+    # add number
+    """
+    __add(input)
+
+@click.command()
+@click.option('--input', default='', help='file path for formatting')
+def format(input):
+    """
+    # clean + add number.
+    """
+    __clean(input)
+    __add(input)
+
+# pack command
+cli.add_command(clean)
+cli.add_command(add)
+cli.add_command(format)
+
+if __name__ == '__main__':
+    cli()
+
