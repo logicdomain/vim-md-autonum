@@ -1,5 +1,5 @@
 # 1. How to use?
-- Place the logic-autonum(executor) into your PATH.
+- Place the logic-autonum | logic-autonum-stdin(executor) into your PATH.
 - Call in vim:
 ```
 :Autonum
