@@ -3,9 +3,10 @@
 @Author: logic
 @Date: 20190623
 @Desc: Automatically adding number for markdown file.
- - format: $cli format --input={file_path}
- - clean: $cli clean --input={file_path}
- - add: $cli add --input={file_path}
+ - {file_path} was from sys.stdin.read
+ - format: $cli format {file_path}
+ - clean: $cli clean {file_path}
+ - add: $cli add {file_path}
 """
 
 import re
