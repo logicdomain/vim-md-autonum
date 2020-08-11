@@ -29,8 +29,8 @@ Plug 'logicdomain/vim-md-autonum', {'do': './install.sh'}
 ```
 - After autonum:
 ```
-# title
-## t1
-### t11
-## t2
+# 1. title
+## 1.1. t1
+### 2. t11
+## 2.1. t2
 ```
