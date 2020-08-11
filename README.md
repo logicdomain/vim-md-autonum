@@ -1,5 +1,9 @@
-# 1. How to use?
-- Place the logic-autonum | logic-autonum-stdin(executor) into your PATH.
+# 1. Installation
+```
+Plug 'logicdomain/vim-md-autonum', {'do': './install.sh'}
+```
+
+# 2. How to use?
 - Call in vim:
 ```
 :Autonum
@@ -11,11 +15,11 @@
 :AddNum
 ```
 
-# 2. How many levels?
+# 3. How many levels?
 - 5 means 1.2.3.4.5.
 - Extendable: Alternate the initial_num_level to bigger range in logic-autonum file.
 
-# 3. Sample
+# 4. Sample
 - Before autonum:
 ```
 # title
@@ -25,8 +29,8 @@
 ```
 - After autonum:
 ```
-# 1. title
-## 1.1. t1
-### 1.1.1. t11
-## 1.2. t2
+# title
+## t1
+### t11
+## t2
 ```
