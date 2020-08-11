@@ -3,13 +3,15 @@
 @Author: logic
 @Date: 20190623
 @Desc: Automatically adding number for markdown file.
- - format: $cli format --input={file_path}
- - clean: $cli clean --input={file_path}
- - add: $cli add --input={file_path}
+ - {file_path} was from sys.stdin.read
+ - format: $cli format {file_path}
+ - clean: $cli clean {file_path}
+ - add: $cli add {file_path}
 """
 
 import re
 import click
+import sys
 
 HEAD_RE = re.compile('^#+')
 initial_num_level = [0, 1, 1, 1, 1]  # 4 level: 0.1.1.1 => 5 level: 0.1.1.1.1 => ...
@@ -18,79 +20,61 @@ def __reset_sub_levels(level, index):
     level[index:] = initial_num_level[index:]
     return level
 
-def __clean(file_path):
-    with open(file_path, 'r') as f:
-        lines = f.readlines()
-        length = len(lines)
-        for i in range(length):
-            line = lines[i]
-            if HEAD_RE.match(line):
-                lines[i] = re.sub(r'^\s*(#+)\s+(\d+\.)+\s+', r'\1 ', line, 1)
+def __clean(content):
+    lines = content.split('\n')
+    length = len(lines)
+    for i in range(length):
+        line = lines[i]
+        if HEAD_RE.match(line):
+            lines[i] = re.sub(r'^\s*(#+)\s+(\d+\.)+\s+', r'\1 ', line, 1)
+    print('\n'.join(lines))
 
-    with open(file_path, 'w') as f:
-        f.writelines(lines)
-
-def __add(file_path):
+def __add(content):
     num_level = list(initial_num_level)
-    with open(file_path, 'r') as f:
-        lines = f.readlines()
-        length = len(lines)
+    lines = content.split('\n')
+    length = len(lines)
 
-        last_head_len = 1
-        code_tag_cnt = 0
-        for i in range(length):
-            line = lines[i]
-            if re.match(r'\s*```',line):
-                code_tag_cnt += 1
-            if code_tag_cnt%2 == 0 and HEAD_RE.match(line): # filter # in code paragraph
-                head = re.match(r'^#+', line).group()
-                head_len = len(head)
-                if head_len <= last_head_len:
-                    num_level = __reset_sub_levels(num_level, head_len)
-                    num_level[head_len - 1] = num_level[head_len - 1] + 1
-                last_head_len = head_len
+    last_head_len = 1
+    code_tag_cnt = 0
+    for i in range(length):
+        line = lines[i]
+        if re.match(r'\s*```',line):
+            code_tag_cnt += 1
+        if code_tag_cnt%2 == 0 and HEAD_RE.match(line): # filter # in code paragraph
+            head = re.match(r'^#+', line).group()
+            head_len = len(head)
+            if head_len <= last_head_len:
+                num_level = __reset_sub_levels(num_level, head_len)
+                num_level[head_len - 1] = num_level[head_len - 1] + 1
+            last_head_len = head_len
 
-                number_str = '.'.join([str(i) for i in num_level[:head_len]]) + '.'
-                number_str = re.sub(r'\.+$', '.', number_str)
-                lines[i] = re.sub(r'^(#+)\s+', r'\1 %s ' % number_str, line)
+            number_str = '.'.join([str(i) for i in num_level[:head_len]]) + '.'
+            number_str = re.sub(r'\.+$', '.', number_str)
+            lines[i] = re.sub(r'^(#+)\s+', r'\1 %s ' % number_str, line)
+    print('\n'.join(lines))
 
-    with open(file_path, 'w') as f:
-        # print(lines)
-        f.writelines(lines)
 
 @click.group()
 def cli():
     pass
 
 @click.command()
-@click.option('--input', default='', help='file path for cleaning')
-def clean(input):
+def clean():
     """
     # clean number
     """
-    __clean(input)
+    __clean(sys.stdin.read())
 
 @click.command()
-@click.option('--input', default='', help='file path for adding')
-def add(input):
+def add():
     """
     # add number
     """
-    __add(input)
-
-@click.command()
-@click.option('--input', default='', help='file path for formatting')
-def format(input):
-    """
-    # clean + add number.
-    """
-    __clean(input)
-    __add(input)
+    __add(sys.stdin.read())
 
 # pack command
 cli.add_command(clean)
 cli.add_command(add)
-cli.add_command(format)
 
 if __name__ == '__main__':
     cli()
