@@ -1,2 +1,3 @@
 #!/bin/bash
-sudo cp logic-autonum /usr/local/bin/
+sudo pip install -i https://pypi.douban.com/simple click
+sudo install logic-autonum /usr/local/bin/
